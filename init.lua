@@ -44,6 +44,11 @@ P.S. You can delete this when you're done too. It's your config now :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- Disable netrw in favour of NvimTree
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -135,6 +140,7 @@ require('lazy').setup({
 
   -- Miscelaneous.
   {
+    'nvim-tree/nvim-tree.lua',      -- File explorer.
     'f-person/git-blame.nvim',      -- Git blame suffices.
     'preservim/tagbar',             -- Overview of data structures, interfaces, etc.
     'folke/todo-comments.nvim',     -- To neatly consolidate TODOs, FIXMEs, etc.
@@ -144,7 +150,24 @@ require('lazy').setup({
     'm-demare/hlargs.nvim',         -- Highlight argument definitions.
     'danilamihailov/beacon.nvim',   -- Show prompt.
     'lvimuser/lsp-inlayhints.nvim', -- Inlay hints.
-    'rebelot/heirline.nvim',        -- Statusline.
+    'nvim-treesitter/nvim-treesitter-context',
+  },
+
+  -- Nice command line UI.
+  {
+    'folke/noice.nvim',
+    event = "VeryLazy",
+    opts = {
+      -- add any options here
+    },
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      "MunifTanjim/nui.nvim",
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      "rcarriga/nvim-notify",
+    },
   },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
@@ -253,6 +276,14 @@ require('lazy').setup({
   },
 
   {
+    -- Bufferline
+    'akinsho/bufferline.nvim',
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+  },
+
+  {
     -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
@@ -294,6 +325,15 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
 
+  -- Live preview for Markdown.
+  {
+    "iamcco/markdown-preview.nvim",
+    cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+    ft = { "markdown" },
+    build = function() vim.fn["mkdp#util#install"]() end,
+  },
+
+
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
@@ -313,7 +353,13 @@ require('lazy').setup({
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 
-vim.opt.rnu = true
+-- General options.
+
+-- Highlight the current line.
+vim.opt.cursorline = true
+
+-- Show relative numbers in the margin.
+vim.opt.relativenumber = true
 
 -- Set highlight on search
 vim.o.hlsearch = false
@@ -327,7 +373,7 @@ vim.o.mouse = 'a'
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
-vim.o.clipboard = 'unnamedplus'
+-- vim.o.clipboard = 'unnamedplus'
 
 -- Enable break indent
 vim.o.breakindent = true
@@ -367,6 +413,27 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous dia
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+
+-- Move selected text up and down.
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
+
+-- Keep cursor in place when merging line below.
+vim.keymap.set('n', 'J', "mzJ`z")
+
+-- Keep cursor in the middle when moving up and down.
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+
+-- Easily use OS clipboard.
+vim.keymap.set('n', '<leader>y', '"+y')
+vim.keymap.set('v', '<leader>y', '"+y')
+vim.keymap.set('n', '<leader>Y', '"+Y')
+
+-- Keep the cut text on clipboard after paste.
+vim.keymap.set('x', '<leader>p', '"_dP')
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -772,6 +839,38 @@ vim.api.nvim_create_autocmd("LspAttach", {
     require("lsp-inlayhints").on_attach(client, bufnr)
   end,
 })
+
+require('bufferline').setup({})
+
+require("nvim-tree").setup()
+vim.keymap.set('n', '<leader>tt', ':NvimTreeToggle<cr>', { desc = 'Nvim[T]ree[T]oggle' })
+vim.keymap.set('n', '<leader>tf', ':NvimTreeFocus<cr>', { desc = 'Nvim[T]ree[F]ocus' })
+vim.keymap.set('n', '<leader>to', ':NvimTreeOpen<cr>', { desc = 'Nvim[T]ree[O]pen' })
+vim.keymap.set('n', '<leader>tc', ':NvimTreeClose<cr>', { desc = 'Nvim[T]ree[C]lose' })
+
+require("nvim-autopairs").setup {}
+
+require("noice").setup({
+  lsp = {
+    -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+    override = {
+      ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+      ["vim.lsp.util.stylize_markdown"] = true,
+      ["cmp.entry.get_documentation"] = true, -- requires hrsh7th/nvim-cmp
+    },
+  },
+  -- you can enable a preset for easier configuration
+  presets = {
+    bottom_search = true,         -- use a classic bottom cmdline for search
+    command_palette = true,       -- position the cmdline and popupmenu together
+    long_message_to_split = true, -- long messages will be sent to a split
+    inc_rename = false,           -- enables an input dialog for inc-rename.nvim
+    lsp_doc_border = false,       -- add a border to hover docs and signature help
+  },
+})
+
+-- Additional treesitter context.
+require 'treesitter-context'.setup {}
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
