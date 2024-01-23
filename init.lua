@@ -151,6 +151,7 @@ require('lazy').setup({
     'danilamihailov/beacon.nvim',   -- Show prompt.
     'lvimuser/lsp-inlayhints.nvim', -- Inlay hints.
     'nvim-treesitter/nvim-treesitter-context',
+    'mbbill/undotree',
   },
 
   -- Nice command line UI.
@@ -431,6 +432,9 @@ vim.keymap.set('n', 'N', 'Nzzzv')
 vim.keymap.set('n', '<leader>y', '"+y')
 vim.keymap.set('v', '<leader>y', '"+y')
 vim.keymap.set('n', '<leader>Y', '"+Y')
+vim.keymap.set('n', '<leader>p', '"+p')
+vim.keymap.set('v', '<leader>p', '"+p')
+vim.keymap.set('n', '<leader>P', '"+P')
 
 -- Keep the cut text on clipboard after paste.
 vim.keymap.set('x', '<leader>p', '"_dP')
