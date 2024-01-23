@@ -82,6 +82,9 @@ require('lazy').setup({
   {
     -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
+    opts = {
+      inlay_hints = { enabled = true },
+    },
     dependencies = {
       -- Automatically install LSPs to stdpath for neovim
       { 'williamboman/mason.nvim', config = true },
@@ -130,14 +133,18 @@ require('lazy').setup({
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim',  opts = {} },
 
+  -- Miscelaneous.
   {
-    'preservim/tagbar',           -- Overview of data structures, interfaces, etc.
-    'folke/todo-comments.nvim',   -- To neatly consolidate TODOs, FIXMEs, etc.
-    'folke/trouble.nvim',         -- Show errors, warnings, etc.
-    'windwp/nvim-autopairs',      -- Pair brackets.
-    'RRethy/vim-illuminate',      -- Highlight same words.
-    'm-demare/hlargs.nvim',       -- Highlight argument definitions.
-    'danilamihailov/beacon.nvim', -- Show prompt.
+    'f-person/git-blame.nvim',      -- Git blame suffices.
+    'preservim/tagbar',             -- Overview of data structures, interfaces, etc.
+    'folke/todo-comments.nvim',     -- To neatly consolidate TODOs, FIXMEs, etc.
+    'folke/trouble.nvim',           -- Show errors, warnings, etc.
+    'windwp/nvim-autopairs',        -- Pair brackets.
+    'RRethy/vim-illuminate',        -- Highlight same words.
+    'm-demare/hlargs.nvim',         -- Highlight argument definitions.
+    'danilamihailov/beacon.nvim',   -- Show prompt.
+    'lvimuser/lsp-inlayhints.nvim', -- Inlay hints.
+    'rebelot/heirline.nvim',        -- Statusline.
   },
   {
     -- Adds git related signs to the gutter, as well as utilities for managing changes
@@ -747,7 +754,24 @@ vim.keymap.set('', 'T', function()
   hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
 end, { remap = true })
 
+-- Hop keymaps.
 vim.keymap.set('n', '<leader>hw', ':HopWord<cr>', { desc = '[H]op[W]ord' })
+
+-- Inline hints (return types, inferred variable type declarations).
+require("lsp-inlayhints").setup()
+vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
+vim.api.nvim_create_autocmd("LspAttach", {
+  group = "LspAttach_inlayhints",
+  callback = function(args)
+    if not (args.data and args.data.client_id) then
+      return
+    end
+
+    local bufnr = args.buf
+    local client = vim.lsp.get_client_by_id(args.data.client_id)
+    require("lsp-inlayhints").on_attach(client, bufnr)
+  end,
+})
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
