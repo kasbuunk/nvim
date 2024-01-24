@@ -105,7 +105,7 @@ require('lazy').setup({
   },
 
   {
-    -- Hop: for quick navigation
+    -- Quick navigation.
     'smoka7/hop.nvim',
     version = "*",
     opts = {
@@ -152,6 +152,7 @@ require('lazy').setup({
     'lvimuser/lsp-inlayhints.nvim', -- Inlay hints.
     'nvim-treesitter/nvim-treesitter-context',
     'mbbill/undotree',
+    'ggandor/leap.nvim', -- Quick navigation.
   },
 
   -- Nice command line UI.
@@ -757,7 +758,7 @@ cmp.setup {
     ['<C-c>'] = cmp.mapping.close(),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Insert,
+      behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
     ['<Tab>'] = cmp.mapping(function(fallback)
@@ -795,6 +796,7 @@ cmp.setup {
   },
   formatting = {
     fields = { 'menu', 'abbr', 'kind' },
+    expandable_indicator = false,
     format = function(entry, item)
       local menu_icon = {
         nvim_lsp = 'λ',
@@ -807,13 +809,6 @@ cmp.setup {
     end
   },
 }
-
--- Configure hop.
-local hop = require('hop')
-local directions = require('hop.hint').HintDirection
-
--- Hop keymaps.
-vim.keymap.set('n', '<leader>hw', ':HopWord<cr>', { desc = '[H]op[W]ord' })
 
 -- Inline hints (return types, inferred variable type declarations).
 require("lsp-inlayhints").setup()
@@ -862,6 +857,9 @@ require("noice").setup({
 
 -- Additional treesitter context.
 require 'treesitter-context'.setup {}
+
+-- Configure Leap.
+require('leap').create_default_mappings()
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
