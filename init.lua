@@ -138,7 +138,7 @@ require('lazy').setup({
   -- Useful plugin to show you pending keybinds.
   { 'folke/which-key.nvim',  opts = {} },
 
-  -- Miscelaneous.
+  -- Miscellaneous.
   {
     'nvim-tree/nvim-tree.lua',      -- File explorer.
     'f-person/git-blame.nvim',      -- Git blame suffices.
